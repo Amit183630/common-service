@@ -1,0 +1,38 @@
+package org.jwick.commonserviceapp.security.filter;
+
+import java.io.IOException;
+
+import org.springframework.http.MediaType;
+import org.springframework.security.web.AuthenticationEntryPoint;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jwick.commonserviceapp.model.DataResponse;
+import org.jwick.commonserviceapp.model.ErrorCodes;
+import org.jwick.commonserviceapp.model.ErrorDetails;
+import org.jwick.commonserviceapp.util.LoggerHelper;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class AuthEntryPoint implements AuthenticationEntryPoint {
+
+
+	@Override
+	public void commence(HttpServletRequest request, HttpServletResponse response,
+			org.springframework.security.core.AuthenticationException authException)
+			throws IOException, ServletException {
+		log.error("Unauthorized error: {}", LoggerHelper.printStackTrace(authException));
+
+		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+		DataResponse dataResponse = new DataResponse(
+				new ErrorDetails(ErrorCodes.E_AUTH401.name(), authException.getMessage()));
+		final ObjectMapper mapper = new ObjectMapper();
+		mapper.writeValue(response.getOutputStream(), dataResponse);
+
+	}
+}
